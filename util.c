@@ -1,6 +1,6 @@
 /*
  * BackFS utility functions
- * Copyright (c) 2014 William R. Fraser
+ * Copyright (c) 2014-2018 William R. Fraser
  */
 
 #include <stdio.h>
@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/statfs.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 #include "util.h"
 #include "global.h"
@@ -59,4 +60,17 @@ char* areadlink(const char* path)
         }
     }
     return buf;
+}
+
+/*
+ * glibc does not provide a wrapper for renameat2, so we have to make one ourselves.
+ */
+int renameat2(
+        int olddirfd,
+        const char *oldpath,
+        int newdirfd,
+        const char *newpath,
+        unsigned int flags)
+{
+    return (int) syscall(SYS_renameat2, olddirfd, oldpath, newdirfd, newpath, flags);
 }
